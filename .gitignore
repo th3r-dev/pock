@@ -13,3 +13,7 @@ Pock.xcworkspace/contents.xcworkspacedata
 
 ## Hide Secrets
 Secrets.plist
+
+## Local builds
+build/
+AgentStats/build/

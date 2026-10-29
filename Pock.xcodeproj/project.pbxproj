@@ -672,6 +672,7 @@
 				FE26ADECFF38E70242F074EC /* [CP] Embed Pods Frameworks */,
 				34E78F5F264EB0FD001CBA4E /* Embed App Extensions */,
 				34A8BA6726CC06600070B0EC /* Close any Pock instances */,
+				FFC547686CBAC27D9B1E0AB6 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -852,6 +853,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Pock/Pods-Pock-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		FFC547686CBAC27D9B1E0AB6 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Pock/Pods-Pock-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Pock/Pods-Pock-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Pock/Pods-Pock-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
