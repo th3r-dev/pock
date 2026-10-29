@@ -18,8 +18,6 @@ enum QuickActions {
                     command: terminal("claude")),
         QuickAction(title: "Codex", symbol: "plus",
                     command: terminal("codex")),
-        QuickAction(title: "Usage", symbol: "chart.bar",
-                    command: "open https://claude.ai/settings/usage"),
     ]
 
     private static func terminal(_ cmd: String) -> String {

@@ -30,8 +30,8 @@ the last one presented wins.
 - `~/.usagebar/config.json`: shared with agents-stat (refresh interval,
   card width, thresholds, enabled providers). Re-read on every refresh.
 - `~/.usagebar/quick-actions.json`: the menu buttons. It's created with
-  defaults on first run (new Claude session, new Codex session, open the usage
-  page). Each entry runs `command` in a login zsh:
+  defaults on first run (new Claude session, new Codex session). Each entry
+  runs `command` in a login zsh:
 
 ```json
 [
