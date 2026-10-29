@@ -94,12 +94,14 @@ final class AgentStatsWidget: NSObject, PKWidget {
     }
 
     private func apply(_ usage: [String: ProviderUsage], config cfg: Config) {
+        let resized = cfg.widgetVisibleCards != config.widgetVisibleCards
+            || cfg.cardWidth != config.cardWidth
         config = cfg
         setQuickApp(cfg.quickApp)
         lastUsage = usage
         // Rebuild only when the provider set changes, never on a plain refresh.
         let incoming = usage.keys.filter { cfg.enabledProviders?.contains($0) ?? true }.sorted()
-        if !incoming.isEmpty, Set(incoming) != Set(cards.map(\.provider)) {
+        if !incoming.isEmpty, resized || Set(incoming) != Set(cards.map(\.provider)) {
             buildCards(incoming)
         }
         for (provider, card) in cards { card.update(usage[provider]) }
@@ -112,7 +114,8 @@ final class AgentStatsWidget: NSObject, PKWidget {
             return (provider, AgentCardView(agent: agent, config: config))
         }
         strip = cards.isEmpty ? nil
-            : CardsStrip(cards: cards.map(\.view), cardWidth: max(180, config.cardWidth))
+            : CardsStrip(cards: cards.map(\.view), cardWidth: max(180, config.cardWidth),
+                         maxVisible: max(1, config.widgetVisibleCards))
         layout()
     }
 

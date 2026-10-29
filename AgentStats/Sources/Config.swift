@@ -24,6 +24,7 @@ struct Config: Codable {
     var cardWidth: Double = 244
     var warnPercent: Double = 70
     var dangerPercent: Double = 90
+    var widgetVisibleCards = 2  // Pock widget: cards shown before swiping (bar is shared)
     var quickApp: String?      // .app shown right of the clock; tap launches it (1 slot)
     var quickAppAction = "minimize"  // tap while running: "minimize" | "close" | "fullscreen"
     var closeWindowOnQuickAdd = true  // shake-to-add: close the shaken window after adding
@@ -48,6 +49,7 @@ struct Config: Codable {
         cardWidth = try c.decodeIfPresent(Double.self, forKey: .cardWidth) ?? d.cardWidth
         warnPercent = try c.decodeIfPresent(Double.self, forKey: .warnPercent) ?? d.warnPercent
         dangerPercent = try c.decodeIfPresent(Double.self, forKey: .dangerPercent) ?? d.dangerPercent
+        widgetVisibleCards = try c.decodeIfPresent(Int.self, forKey: .widgetVisibleCards) ?? d.widgetVisibleCards
         quickApp = try c.decodeIfPresent(String.self, forKey: .quickApp)
         quickAppAction = try c.decodeIfPresent(String.self, forKey: .quickAppAction) ?? d.quickAppAction
         closeWindowOnQuickAdd = try c.decodeIfPresent(Bool.self, forKey: .closeWindowOnQuickAdd)

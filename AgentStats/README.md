@@ -45,6 +45,8 @@ the last one presented wins.
   codexbar provider works: add `"antigravity"`, `"kilo"`, `"cursor"`,
   `"gemini"`, and so on. A provider that only returns an error (for example,
   not logged in) gets no card.
+  The widget shows `widgetVisibleCards` cards (default 2) and you swipe the
+  cards sideways for the rest. Raise it if your Pock bar has room.
 - `~/.usagebar/quick-actions.json`: the menu buttons. It's created with
   defaults on first run (new session for Claude, Codex, Antigravity `agy`).
   ＋ Custom appends to it. Each entry runs `command` in a login zsh. `process` lists the CLI
