@@ -1,12 +1,14 @@
 # Agent Stats widget
 
 A Pock widget that shows the AI agent quota cards from
-[agents-stat](../../agents-stat) (5h / weekly gauges from the
-[CodexBar](https://github.com/steipete/CodexBar) CLI). Next to the cards, a
-⚡ button shows how many `claude` / `codex` sessions are running.
+[agents-stat](https://github.com/th3r-dev/agents-stat) (5h / weekly gauges
+from the [CodexBar](https://github.com/steipete/CodexBar) CLI). Next to the
+cards, a ⚡ button shows how many interactive agent sessions are running.
+Only processes attached to a terminal count, so background daemons don't.
 
 Tap ⚡ to open the quick-actions menu on the Touch Bar: ‹ back, ↻ refresh,
-then one button per quick action. Tap ‹ to go back to the cards.
+then one button per quick action, each showing its own session count
+("Claude 2"). Tap ‹ to go back to the cards.
 
 ## Build
 
@@ -29,13 +31,19 @@ the last one presented wins.
 
 - `~/.usagebar/config.json`: shared with agents-stat (refresh interval,
   card width, thresholds, enabled providers). Re-read on every refresh.
+  When `enabledProviders` is set, each provider is polled separately, so any
+  codexbar provider works: add `"antigravity"`, `"kilo"`, `"cursor"`,
+  `"gemini"`, and so on. A provider that only returns an error (for example,
+  not logged in) gets no card.
 - `~/.usagebar/quick-actions.json`: the menu buttons. It's created with
-  defaults on first run (new Claude session, new Codex session). Each entry
-  runs `command` in a login zsh:
+  defaults on first run (new session for Claude, Codex, Antigravity `agy`,
+  Kilo). Each entry runs `command` in a login zsh. `process` lists the CLI
+  binary names whose sessions the button counts:
 
 ```json
 [
-  { "title": "Claude", "symbol": "plus", "command": "osascript -e 'tell application \"Terminal\" to do script \"claude\"'" },
+  { "title": "Antigravity", "symbol": "plus", "process": ["agy"],
+    "command": "osascript -e 'tell application \"Terminal\" to do script \"agy\"'" },
   { "title": "Stop all", "symbol": "stop.fill", "command": "pkill -x claude; pkill -x codex" }
 ]
 ```

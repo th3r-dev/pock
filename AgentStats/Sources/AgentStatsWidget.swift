@@ -2,8 +2,9 @@ import AppKit
 import PockKit
 
 // Pock widget: agent quota cards (same cards as agents-stat) plus a ⚡ button
-// showing how many agent sessions are running. Tapping ⚡ swaps the cards for
-// the quick-actions menu; ‹ swaps back.
+// showing how many interactive agent sessions are running. Tapping ⚡ swaps
+// the cards for the quick-actions menu, each button with its own session
+// count; ‹ swaps back.
 @objc(AgentStatsWidget)
 final class AgentStatsWidget: NSObject, PKWidget {
     static var identifier: String { "dev.th3r.pock.agentstats" }
@@ -18,6 +19,7 @@ final class AgentStatsWidget: NSObject, PKWidget {
     private var refreshTimer: Timer?
     private var tickTimer: Timer?
     private var menuOpen = false
+    private var sessions: [String: Int] = [:]
     private lazy var menuButton = NSButton(title: "–", image: symbolImage("bolt.fill") ?? NSImage(),
                                            target: self, action: #selector(toggleMenu))
 
@@ -49,15 +51,42 @@ final class AgentStatsWidget: NSObject, PKWidget {
 
     @objc private func refresh() {
         let cfg = Config.load()  // pick up agents-stat Settings edits
+        let names = Set(QuickActions.load().flatMap { $0.process ?? [] })
         // Separate jobs: codexbar can take ~40s, the process count is instant.
         DispatchQueue.global(qos: .utility).async { [weak self] in
-            let running = runningAgents()
-            DispatchQueue.main.async { self?.menuButton.title = "\(running)" }
+            let counts = runningSessions(names)
+            DispatchQueue.main.async { self?.applySessions(counts) }
         }
         DispatchQueue.global(qos: .utility).async { [weak self] in
-            let usage = fetchUsage(config: cfg)
+            let usage = Self.fetchAll(cfg)
             DispatchQueue.main.async { self?.apply(usage, config: cfg) }
         }
+    }
+
+    // codexbar takes one --provider value, so with an explicit provider list
+    // (enabledProviders) poll each in parallel. Providers that only return an
+    // error (e.g. not logged in) carry no windows and get no card.
+    private static func fetchAll(_ cfg: Config) -> [String: ProviderUsage] {
+        guard let providers = cfg.enabledProviders, !providers.isEmpty else {
+            return fetchUsage(config: cfg)
+        }
+        let lock = NSLock()
+        var merged: [String: ProviderUsage] = [:]
+        DispatchQueue.concurrentPerform(iterations: providers.count) { i in
+            var one = cfg
+            one.providerArg = providers[i]
+            let usage = fetchUsage(config: one)
+            lock.lock()
+            merged.merge(usage) { a, _ in a }
+            lock.unlock()
+        }
+        return merged.filter { $0.value.primary != nil || $0.value.secondary != nil }
+    }
+
+    private func applySessions(_ counts: [String: Int]) {
+        sessions = counts
+        menuButton.title = "\(counts.values.reduce(0, +))"
+        if menuOpen { layout() }
     }
 
     private func apply(_ usage: [String: ProviderUsage], config cfg: Config) {
@@ -94,7 +123,9 @@ final class AgentStatsWidget: NSObject, PKWidget {
         root.addArrangedSubview(button(nil, "chevron.left", #selector(toggleMenu)))
         root.addArrangedSubview(button(nil, "arrow.clockwise", #selector(refresh)))
         for (i, action) in QuickActions.load().enumerated() {
-            let b = button(action.title, action.symbol, #selector(runAction(_:)))
+            let n = (action.process ?? []).reduce(0) { $0 + (sessions[$1] ?? 0) }
+            let b = button(n > 0 ? "\(action.title) \(n)" : action.title, action.symbol,
+                           #selector(runAction(_:)))
             b.tag = i
             root.addArrangedSubview(b)
         }
