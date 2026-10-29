@@ -6,9 +6,19 @@ from the [CodexBar](https://github.com/steipete/CodexBar) CLI). Next to the
 cards, a ⚡ button shows how many interactive agent sessions are running.
 Only processes attached to a terminal count, so background daemons don't.
 
+Between the cards and ⚡ sits the **Quick App** slot from agents-stat (the
+`quickApp` app in `config.json`). Tap it to launch the app, or, while it's
+running, to minimize, close or fullscreen it (`quickAppAction`). Those three
+need Accessibility for Pock; without it, the tap hides or unhides the app.
+
 Tap ⚡ to open the quick-actions menu on the Touch Bar: ‹ back, ↻ refresh,
 then one button per quick action, each showing its own session count
-("Claude 2"). Tap ‹ to go back to the cards.
+("Claude 2"), then **＋ Custom**. Tap ‹ to go back to the cards.
+
+**＋ Custom** opens an Add Custom Provider window. Fill in a name, the command
+to run in Terminal, optionally the process names to count and the codexbar
+provider id for a quota card, then click Add. The button appears in the menu
+right away.
 
 ## Build
 
@@ -36,8 +46,8 @@ the last one presented wins.
   `"gemini"`, and so on. A provider that only returns an error (for example,
   not logged in) gets no card.
 - `~/.usagebar/quick-actions.json`: the menu buttons. It's created with
-  defaults on first run (new session for Claude, Codex, Antigravity `agy`,
-  Kilo). Each entry runs `command` in a login zsh. `process` lists the CLI
+  defaults on first run (new session for Claude, Codex, Antigravity `agy`).
+  ＋ Custom appends to it. Each entry runs `command` in a login zsh. `process` lists the CLI
   binary names whose sessions the button counts:
 
 ```json
@@ -52,5 +62,6 @@ the last one presented wins.
 because agents-stat's Settings window rewrites `config.json` and would drop
 unknown keys.
 
-`Usage.swift`, `Config.swift` and `Cards.swift` are copied from agents-stat.
+`Usage.swift`, `Config.swift`, `Cards.swift` and `QuickApp.swift` are copied
+from agents-stat.
 Re-copy them when they change there.

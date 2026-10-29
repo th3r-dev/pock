@@ -20,10 +20,9 @@ enum QuickActions {
         QuickAction(title: "Claude", symbol: "plus", command: terminal("claude"), process: ["claude"]),
         QuickAction(title: "Codex", symbol: "plus", command: terminal("codex"), process: ["codex"]),
         QuickAction(title: "Antigravity", symbol: "plus", command: terminal("agy"), process: ["agy"]),
-        QuickAction(title: "Kilo", symbol: "plus", command: terminal("kilo"), process: ["kilo", "kilocode"]),
     ]
 
-    private static func terminal(_ cmd: String) -> String {
+    static func terminal(_ cmd: String) -> String {
         #"osascript -e 'tell application "Terminal" to do script "\#(cmd)"' -e 'tell application "Terminal" to activate'"#
     }
 
@@ -34,12 +33,20 @@ enum QuickActions {
         }
         // Write defaults only if no file exists — never clobber a malformed user edit.
         if !FileManager.default.fileExists(atPath: file.path) {
-            try? FileManager.default.createDirectory(at: Config.dir, withIntermediateDirectories: true)
-            let enc = JSONEncoder()
-            enc.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
-            try? (try? enc.encode(defaults))?.write(to: file)
+            save(defaults)
         }
         return defaults
+    }
+
+    static func add(_ action: QuickAction) {
+        save(load() + [action])
+    }
+
+    private static func save(_ actions: [QuickAction]) {
+        try? FileManager.default.createDirectory(at: Config.dir, withIntermediateDirectories: true)
+        let enc = JSONEncoder()
+        enc.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
+        try? (try? enc.encode(actions))?.write(to: file)
     }
 
     static func run(_ action: QuickAction) {

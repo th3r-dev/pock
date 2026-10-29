@@ -1,10 +1,10 @@
 import AppKit
 import PockKit
 
-// Pock widget: agent quota cards (same cards as agents-stat) plus a ⚡ button
-// showing how many interactive agent sessions are running. Tapping ⚡ swaps
-// the cards for the quick-actions menu, each button with its own session
-// count; ‹ swaps back.
+// Pock widget: agent quota cards (same cards as agents-stat), the Quick App
+// slot, and a ⚡ button showing how many interactive agent sessions are
+// running. Tapping ⚡ swaps the cards for the quick-actions menu, each button
+// with its own session count, plus "＋ Custom" to add one; ‹ swaps back.
 @objc(AgentStatsWidget)
 final class AgentStatsWidget: NSObject, PKWidget {
     static var identifier: String { "dev.th3r.pock.agentstats" }
@@ -20,6 +20,9 @@ final class AgentStatsWidget: NSObject, PKWidget {
     private var tickTimer: Timer?
     private var menuOpen = false
     private var sessions: [String: Int] = [:]
+    private var quickAppPath: String?
+    private lazy var quickAppButton = NSButton(image: NSImage(), target: self,
+                                               action: #selector(quickAppTapped))
     private lazy var menuButton = NSButton(title: "–", image: symbolImage("bolt.fill") ?? NSImage(),
                                            target: self, action: #selector(toggleMenu))
 
@@ -29,6 +32,7 @@ final class AgentStatsWidget: NSObject, PKWidget {
         root.spacing = 8
         menuButton.imagePosition = .imageLeading
         view = root
+        setQuickApp(config.quickApp)
         let enabled: (String) -> Bool = { [config] in config.enabledProviders?.contains($0) ?? true }
         buildCards(config.agents.map { $0.provider.lowercased() }.filter(enabled))
     }
@@ -91,6 +95,7 @@ final class AgentStatsWidget: NSObject, PKWidget {
 
     private func apply(_ usage: [String: ProviderUsage], config cfg: Config) {
         config = cfg
+        setQuickApp(cfg.quickApp)
         lastUsage = usage
         // Rebuild only when the provider set changes, never on a plain refresh.
         let incoming = usage.keys.filter { cfg.enabledProviders?.contains($0) ?? true }.sorted()
@@ -117,6 +122,7 @@ final class AgentStatsWidget: NSObject, PKWidget {
         root.arrangedSubviews.forEach { $0.removeFromSuperview() }
         guard menuOpen else {
             if let strip { root.addArrangedSubview(strip) }
+            if quickAppPath != nil { root.addArrangedSubview(quickAppButton) }
             root.addArrangedSubview(menuButton)
             return
         }
@@ -128,6 +134,34 @@ final class AgentStatsWidget: NSObject, PKWidget {
                            #selector(runAction(_:)))
             b.tag = i
             root.addArrangedSubview(b)
+        }
+        root.addArrangedSubview(button("Custom", "plus.circle", #selector(addCustom)))
+    }
+
+    // Quick App: same config key and tap behaviour as agents-stat.
+    private func setQuickApp(_ path: String?) {
+        let expanded = path.map { ($0 as NSString).expandingTildeInPath }
+            .flatMap { FileManager.default.fileExists(atPath: $0) ? $0 : nil }
+        guard expanded != quickAppPath else { return }
+        quickAppPath = expanded
+        if let expanded {
+            let icon = NSWorkspace.shared.icon(forFile: expanded)
+            icon.size = NSSize(width: 22, height: 22)
+            quickAppButton.image = icon
+        }
+        layout()
+    }
+
+    @objc private func quickAppTapped() {
+        guard let quickAppPath else { return }
+        QuickApp.tap(path: quickAppPath, action: config.quickAppAction)
+    }
+
+    @objc private func addCustom() {
+        ProviderForm.show { [weak self] in
+            self?.menuOpen = false
+            self?.refresh()
+            self?.layout()
         }
     }
 
